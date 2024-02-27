@@ -48,6 +48,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int activeSliderIndex = 0;
+  int numberOfSlides = 0;
 
   @override
   void initState() {
@@ -68,26 +69,13 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             const Padding(
               padding: EdgeInsets.only(left: 10.0, right: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Breaking News',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    'View All',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Breaking News',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
               ),
             ),
             const SizedBox(
@@ -103,13 +91,18 @@ class _MyHomePageState extends State<MyHomePage> {
                       )
                     : sliderProvider.sliderModels.isNotEmpty
                         ? CarouselSlider.builder(
-                            itemCount: 5,
-                            itemBuilder: (ctx, index, realIndex) => buildImage(
-                                imageUrl: sliderProvider
-                                    .sliderModels[index].urlToImage!,
-                                name: sliderProvider.sliderModels[index].title!,
-                                newsBlogUrl:
-                                    sliderProvider.sliderModels[index].url!),
+                            itemCount: sliderProvider.sliderModels.length,
+                            itemBuilder: (ctx, index, realIndex) {
+                              numberOfSlides =
+                                  sliderProvider.sliderModels.length;
+                              return buildImage(
+                                  imageUrl: sliderProvider
+                                      .sliderModels[index].urlToImage!,
+                                  name:
+                                      sliderProvider.sliderModels[index].title!,
+                                  newsBlogUrl:
+                                      sliderProvider.sliderModels[index].url!);
+                            },
                             options: CarouselOptions(
                                 height: 200,
                                 autoPlay: true,
@@ -134,26 +127,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const Padding(
               padding: EdgeInsets.only(left: 10.0, right: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Trending News',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    'View All',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Trending News',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
               ),
             ),
             const SizedBox(
@@ -247,7 +227,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget indicatorWidget() => AnimatedSmoothIndicator(
         activeIndex: activeSliderIndex,
-        count: 5,
+        count: numberOfSlides,
         effect: const ExpandingDotsEffect(
           dotWidth: 10,
           dotHeight: 10,
