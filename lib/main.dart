@@ -40,7 +40,9 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage(this.country, {super.key});
+
+  final String country;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -53,8 +55,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SliderProvider>(context, listen: false).getAllSlidersData();
-      Provider.of<NewsProvider>(context, listen: false).getNews();
+      Provider.of<SliderProvider>(context, listen: false).getAllSlidersData(widget.country);
+      Provider.of<NewsProvider>(context, listen: false).getNews(widget.country);
     });
     super.initState();
   }

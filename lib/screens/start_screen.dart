@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:news_app/main.dart';
+import 'package:news_app/user_location/handle_location_request.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -9,6 +10,11 @@ class StartScreen extends StatefulWidget {
 }
 
 class _StartScreenState extends State<StartScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,13 +60,17 @@ class _StartScreenState extends State<StartScreen> {
             ),
             ElevatedButton.icon(
               icon: const Icon(Icons.newspaper),
-              onPressed: () {
-                setState(() {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MyHomePage()),
-                  );
-                });
+              onPressed: () async {
+                String? country = await getCurrentUserPosition(context);
+                if (country != null) {
+                  setState(() {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MyHomePage(country)),
+                    );
+                  });
+                }
               },
               label: const Text(
                 'Explore News!',

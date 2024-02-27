@@ -16,11 +16,11 @@ class SliderProvider with ChangeNotifier {
 
   bool get loading => _loading;
 
-  Future<void> getAllSlidersData() async {
+  Future<void> getAllSlidersData(String country) async {
     _loading = true;
     try {
       String url =
-          'https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=2a3331676a25413b8903b87cde6fa61b';
+          'https://newsapi.org/v2/top-headlines?country=$country&sources=techcrunch&apiKey=2a3331676a25413b8903b87cde6fa61b';
       var response = await http.get(Uri.parse(url));
       var jsonData = jsonDecode(response.body);
       if (jsonData['status'] == 'ok') {

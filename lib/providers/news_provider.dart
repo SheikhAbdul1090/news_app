@@ -16,11 +16,11 @@ class NewsProvider with ChangeNotifier {
 
   bool get loading => _loading;
 
-  Future<void> getNews() async {
+  Future<void> getNews(String country) async {
     _loading = true;
     try {
       String url =
-          'https://newsapi.org/v2/everything?q=tesla&from=2024-01-26&sortBy=publishedAt&apiKey=2a3331676a25413b8903b87cde6fa61b';
+          'https://newsapi.org/v2/everything?country=$country&q=tesla&from=2024-01-26&sortBy=publishedAt&apiKey=2a3331676a25413b8903b87cde6fa61b';
       var response = await http.get(Uri.parse(url));
       var jsonData = jsonDecode(response.body);
       if (jsonData['status'] == 'ok') {
