@@ -1,6 +1,8 @@
 # News Application
 
-The News Application is a mobile app that provides users with news articles based on their location's country. It utilizes various Flutter packages to display news articles in a carousel format and allows users to view articles in a web view.
+The News Application is a mobile app that provides users with news articles based on their
+location's country. It utilizes various Flutter packages to display news articles in a carousel
+format and allows users to view articles in a web view.
 
 ## Features
 
@@ -10,6 +12,7 @@ The News Application is a mobile app that provides users with news articles base
 - View news articles in a web view for detailed reading.
 
 # Usage
+
 - Launch the app on your device.
 - Grant location permission to the app.
 - The app will automatically detect your location and fetch news articles based on your country.
@@ -17,6 +20,7 @@ The News Application is a mobile app that provides users with news articles base
 - Tap on a news article to view it in a web view for detailed reading.
 
 # Dependencies
+
 - carousel_slider: ^4.2.1
 - smooth_page_indicator: ^1.1.0
 - http: ^1.2.0
