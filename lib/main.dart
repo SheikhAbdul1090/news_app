@@ -1,21 +1,25 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:news_app/models/news_article_model.dart';
-import 'package:news_app/models/slider_model.dart';
+import 'package:news_app/providers/news_provider.dart';
+import 'package:news_app/providers/slider_provider.dart';
+import 'package:news_app/screens/article_webview.dart';
 import 'package:news_app/screens/start_screen.dart';
-import 'package:news_app/services/category_data.dart';
-import 'package:news_app/services/news.dart';
-import 'package:news_app/services/slider_data.dart';
 import 'package:news_app/widget/appbar.dart';
-import 'package:news_app/widget/category_tile.dart';
 import 'package:news_app/widget/news_blog_tile.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import 'models/category_model.dart';
-
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => SliderProvider()),
+        ChangeNotifierProvider(create: (context) => NewsProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -43,33 +47,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late List<CategoryModel> categories;
-  late List<SliderModel> newsSliders;
-  List<NewsArticleModel> newsArticles = [];
   int activeSliderIndex = 0;
-  bool _loading = true;
 
   @override
   void initState() {
-    categories = getCategories();
-    getSliders();
-    getNews();
-    super.initState();
-  }
-
-  getNews() async {
-    News news = News();
-    await news.getNews();
-    newsArticles = news.newsArticles;
-    setState(() {
-      _loading = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<SliderProvider>(context, listen: false).getAllSlidersData();
+      Provider.of<NewsProvider>(context, listen: false).getNews();
     });
-  }
-
-  getSliders() async {
-    Sliders sliders = Sliders();
-    await sliders.getAllSlidersData();
-    newsSliders = sliders.sliders;
+    super.initState();
   }
 
   @override
@@ -80,22 +66,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              margin: const EdgeInsets.only(left: 10),
-              height: 70,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                shrinkWrap: true,
-                itemCount: categories.length,
-                itemBuilder: (ctx, index) => CategoryTile(
-                  categoryName: categories[index].categoryName!,
-                  categoryImage: categories[index].categoryImage!,
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
             const Padding(
               padding: EdgeInsets.only(left: 10.0, right: 10),
               child: Row(
@@ -123,22 +93,37 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(
               height: 30,
             ),
-            CarouselSlider.builder(
-              itemCount: newsSliders.length,
-              itemBuilder: (ctx, index, realIndex) => buildImage(
-                  newsSliders[index].urlToImage!,
-                  index,
-                  newsSliders[index].title!),
-              options: CarouselOptions(
-                  height: 200,
-                  autoPlay: true,
-                  enlargeCenterPage: true,
-                  enlargeStrategy: CenterPageEnlargeStrategy.height,
-                  onPageChanged: (index, reason) {
-                    setState(() {
-                      activeSliderIndex = index;
-                    });
-                  }),
+            Consumer<SliderProvider>(
+              builder: (ctx, sliderProvider, _) {
+                return sliderProvider.loading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.blue,
+                        ),
+                      )
+                    : sliderProvider.sliderModels.isNotEmpty
+                        ? CarouselSlider.builder(
+                            itemCount: 5,
+                            itemBuilder: (ctx, index, realIndex) => buildImage(
+                                imageUrl: sliderProvider
+                                    .sliderModels[index].urlToImage!,
+                                name: sliderProvider.sliderModels[index].title!,
+                                newsBlogUrl:
+                                    sliderProvider.sliderModels[index].url!),
+                            options: CarouselOptions(
+                                height: 200,
+                                autoPlay: true,
+                                enlargeCenterPage: true,
+                                enlargeStrategy:
+                                    CenterPageEnlargeStrategy.height,
+                                onPageChanged: (index, reason) {
+                                  setState(() {
+                                    activeSliderIndex = index;
+                                  });
+                                }),
+                          )
+                        : Container();
+              },
             ),
             const SizedBox(
               height: 30,
@@ -174,72 +159,95 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(
               height: 20,
             ),
-            _loading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.blue,
-                    ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const ClampingScrollPhysics(),
-                    itemCount: newsArticles.length,
-                    itemBuilder: (ctx, index) {
-                      return NewsBlogTile(
-                        newsImageUrl: newsArticles[index].urlToImage!,
-                        newsTitle: newsArticles[index].title!,
-                        newDescription: newsArticles[index].description!,
-                        newsBlogUrl: newsArticles[index].url!,
-                      );
-                    },
-                  ),
+            Consumer<NewsProvider>(
+              builder: (ctx, newsProvider, _) {
+                return newsProvider.loading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.blue,
+                        ),
+                      )
+                    : newsProvider.newsArticles.isNotEmpty
+                        ? ListView.builder(
+                            shrinkWrap: true,
+                            physics: const ClampingScrollPhysics(),
+                            itemCount: newsProvider.newsArticles.length,
+                            itemBuilder: (ctx, index) {
+                              return NewsBlogTile(
+                                newsImageUrl: newsProvider
+                                    .newsArticles[index].urlToImage!,
+                                newsTitle:
+                                    newsProvider.newsArticles[index].title!,
+                                newDescription: newsProvider
+                                    .newsArticles[index].description!,
+                                newsBlogUrl:
+                                    newsProvider.newsArticles[index].url!,
+                              );
+                            },
+                          )
+                        : Container();
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget buildImage(String imageUrl, int index, String name) => Container(
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
+  Widget buildImage(
+          {required String imageUrl,
+          required String name,
+          required String newsBlogUrl}) =>
+      GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ArticleWebView(newsBlogUrl)),
+          );
+        },
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  width: MediaQuery.of(context).size.width,
+                ),
+              ),
+              Container(
+                height: 200,
+                padding: const EdgeInsets.only(left: 10),
+                decoration: const BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(10),
+                    bottomRight: Radius.circular(10),
+                  ),
+                ),
                 width: MediaQuery.of(context).size.width,
-              ),
-            ),
-            Container(
-              height: 200,
-              padding: const EdgeInsets.only(left: 10),
-              decoration: const BoxDecoration(
-                color: Colors.black26,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
+                margin: const EdgeInsets.only(top: 120),
+                child: Text(
+                  name,
+                  maxLines: 2,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-              width: MediaQuery.of(context).size.width,
-              margin: const EdgeInsets.only(top: 120),
-              child: Text(
-                name,
-                maxLines: 2,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
 
   Widget indicatorWidget() => AnimatedSmoothIndicator(
         activeIndex: activeSliderIndex,
-        count: newsSliders.length,
+        count: 5,
         effect: const ExpandingDotsEffect(
           dotWidth: 10,
           dotHeight: 10,

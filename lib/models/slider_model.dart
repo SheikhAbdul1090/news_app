@@ -14,4 +14,15 @@ class SliderModel {
   String? url;
   String? urlToImage;
   String? content;
+
+  factory SliderModel.fromJson(Map<String, dynamic> json) {
+    return SliderModel(
+      author: json['author'],
+      title: json['title'],
+      description: json['description'],
+      url: json['url'],
+      urlToImage: json['urlToImage'],
+      content: json['content'],
+    );
+  }
 }
