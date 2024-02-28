@@ -40,21 +40,23 @@ Future<bool> _handleLocationPermission(BuildContext context) async {
 Future<String?> getCurrentUserPosition(BuildContext context) async {
   final hasPermission = await _handleLocationPermission(context);
   if (!hasPermission) return null;
+  String? country;
   await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
       .then((Position position) async {
-    return await _getAddressFromLatLng(position);
+    country = await _getAddressFromLatLng(position);
   }).catchError((e) {
     debugPrint(e);
   });
-  return null;
+  return country;
 }
 
 Future<String?> _getAddressFromLatLng(Position position) async {
+  String? country;
   await placemarkFromCoordinates(position.latitude, position.longitude)
       .then((List<Placemark> placeMarks) {
-    return placeMarks[0].isoCountryCode?.toLowerCase();
+    country = placeMarks[0].isoCountryCode?.toLowerCase();
   }).catchError((e) {
     debugPrint(e);
   });
-  return null;
+  return country;
 }
